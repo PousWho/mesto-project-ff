@@ -1,5 +1,5 @@
-import './pages/index.css';
-import './blocks/popup/popup.css'
+import '../pages/index.css';
+import '../blocks/popup/popup.css'
 import { initialCards } from './cards.js';
 import './modal.js'
 import { closePopup, openPopup } from './modal.js';
