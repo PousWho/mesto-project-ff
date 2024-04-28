@@ -1,4 +1,4 @@
-import { popupNewCard, editPopup, profileEditButton, closeButtons, imagePopup, openImagePopup } from './index';
+
 
 // Функции openPopup и closePopup теперь экспортируются из модуля
 export function openPopup(popup) {
@@ -9,7 +9,7 @@ export function openPopup(popup) {
 
 export function closePopup(popup) {
   popup.classList.remove('popup_is-opened');
-  const popups = document.querySelector('.popup_is-opened');
+  const popups = document.querySelector('.popup_is-opened');//если удалить эти строки, не будет перебора и закрываться будет только 1 попап
   if (popups) {
       popups.classList.remove('popup_is-opened');
   }
@@ -20,31 +20,19 @@ export function closePopup(popup) {
 // Обработчики закрытия попапа по нажатию на Esc и клику вне области попапа
 function closePopupOnEsc(event) {
   if (event.keyCode === 27) {
-    closePopup(editPopup);
-    closePopup(popupNewCard);
-    closePopup(imagePopup);
+    const openPopup = document.querySelector('.popup_is-opened');
+    if (openPopup) {
+      closePopup(openPopup);
+    }
   }
 }
+
 
 function closePopupOnClickOutside(event) {
-  if (
-    event.target.classList.contains('popup') &&
-    !event.target.classList.contains('popup__content')
-  ) {
-    closePopup(editPopup);
-    closePopup(popupNewCard);
-    closePopup(imagePopup);
+  const openPopup = document.querySelector('.popup_is-opened');
+  if (openPopup && event.target.classList.contains('popup') && !event.target.classList.contains('popup__content')) {
+    closePopup(openPopup);
   }
 }
-
-
-document.addEventListener('DOMContentLoaded', function() {
-  profileEditButton.addEventListener('click', () => openPopup(editPopup));
-  if (closeButtons.length > 0) {
-    closeButtons.forEach(btn => {
-      btn.addEventListener('click', () => closePopup(editPopup));
-    });
-  }
-});
 
 

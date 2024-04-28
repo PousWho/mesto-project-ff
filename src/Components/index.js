@@ -10,7 +10,7 @@ const cardsContainer = document.querySelector('.places__list');
 
 function renderCards() {
     initialCards.forEach(function(item) {
-        const newCard = createCard(item, deleteCard, likeCard);
+        const newCard = createCard(item, deleteCard, likeCard, handleImageClick);
         cardsContainer.append(newCard);
     });
 }
@@ -76,11 +76,10 @@ addCardBtn.addEventListener('click', () => openPopup(popupNewCard));
 
 export const imagePopup = document.querySelector('.popup_type_image');
 const popupImage = imagePopup.querySelector('.popup__image');
+const caption = imagePopup.querySelector('.popup__caption');
 
 export function openImagePopup(imgSrc, imgCaption) {
-    
-    const caption = imagePopup.querySelector('.popup__caption');
-    imagePopup.classList.add('popup_is-opened');
+    openPopup(imagePopup);
     popupImage.src = imgSrc;
     popupImage.alt = imgCaption;
     caption.textContent = imgCaption;
@@ -93,11 +92,20 @@ export function handleImageClick(event) {
     openImagePopup(imgSrc, imgCaption);
 }
 
-// Далее следует код без изменений
 
-
-
-//Модульные переменные
+profileEditButton.addEventListener('click', () => {
+    openPopup(editPopup);
+    const profileNameValue = document.querySelector('.profile__title').textContent;
+    const profileDescriptionValue = document.querySelector('.profile__description').textContent;
+    nameInputTitle.value = profileNameValue;
+    descriptionInput.value = profileDescriptionValue;
+});
+      
+if (closeButtons.length > 0) {
+    closeButtons.forEach(btn => {
+    btn.addEventListener('click', () => closePopup(editPopup));
+    });
+}
 
 
 

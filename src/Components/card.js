@@ -1,7 +1,8 @@
-import { handleImageClick } from './index';
+
 
 // @todo: Функция создания карточки
-export function createCard(cardData, deleteCallback, likeCallback) {
+// Вместо импорта из index.js, передаем функцию handleImageClick как параметр
+export function createCard(cardData, deleteCallback, likeCallback, openImageCallback) {
     const cardTemplate = document.querySelector('#card-template').content;
     const card = cardTemplate.querySelector('.places__item').cloneNode(true);
     const cardImg = card.querySelector('.card__image');
@@ -20,10 +21,14 @@ export function createCard(cardData, deleteCallback, likeCallback) {
         likeCallback(likeButton); // Вызов функции-колбэка для лайка карточки
     });
 
-    cardImg.addEventListener('click', handleImageClick);
+    // Добавляем обработчик клика на изображение, используя переданную функцию
+    cardImg.addEventListener('click', function(event) {
+        openImageCallback(event);
+    });
 
     return card;
 }
+
 
 export function likeCard(likeButton) {
     likeButton.classList.toggle('card__like-button_is-active');
