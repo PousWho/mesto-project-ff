@@ -9,10 +9,6 @@ export function openPopup(popup) {
 
 export function closePopup(popup) {
   popup.classList.remove('popup_is-opened');
-  const popups = document.querySelector('.popup_is-opened');//если удалить эти строки, не будет перебора и закрываться будет только 1 попап
-  if (popups) {
-      popups.classList.remove('popup_is-opened');
-  }
   document.removeEventListener('keydown', closePopupOnEsc);
   document.removeEventListener('click', closePopupOnClickOutside);
 };

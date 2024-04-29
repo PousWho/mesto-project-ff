@@ -61,7 +61,7 @@ function handleNewCardSubmit(event) {
 }
 
 function addNewCard(name, link) {
-    const newCard = createCard({ name: name, link: link }, deleteCard, likeCard);
+    const newCard = createCard({ name: name, link: link }, deleteCard, likeCard, handleImageClick);
     cardsContainer.prepend(newCard);
 }
 
@@ -92,20 +92,27 @@ export function handleImageClick(event) {
     openImagePopup(imgSrc, imgCaption);
 }
 
-
 profileEditButton.addEventListener('click', () => {
     openPopup(editPopup);
-    const profileNameValue = document.querySelector('.profile__title').textContent;
-    const profileDescriptionValue = document.querySelector('.profile__description').textContent;
+    const profileNameValue = profileName.textContent; // Используем переменную profileName
+    const profileDescriptionValue = profileDescription.textContent; // Используем переменную profileDescription
     nameInputTitle.value = profileNameValue;
     descriptionInput.value = profileDescriptionValue;
 });
+
       
-if (closeButtons.length > 0) {
-    closeButtons.forEach(btn => {
-    btn.addEventListener('click', () => closePopup(editPopup));
-    });
-}
+// Навешиваем обработчик на крестик закрытия попапа редактирования профиля
+const editPopupCloseButton = editPopup.querySelector('.popup__close');
+editPopupCloseButton.addEventListener('click', () => closePopup(editPopup));
+
+// Навешиваем обработчик на крестик закрытия попапа новой карточки
+const newCardPopupCloseButton = popupNewCard.querySelector('.popup__close');
+newCardPopupCloseButton.addEventListener('click', () => closePopup(popupNewCard));
+
+// Навешиваем обработчик на крестик закрытия попапа с изображением
+const imagePopupCloseButton = imagePopup.querySelector('.popup__close');
+imagePopupCloseButton.addEventListener('click', () => closePopup(imagePopup));
+
 
 
 

@@ -1,4 +1,4 @@
-
+import { handleImageClick } from "./index";
 
 // @todo: Функция создания карточки
 // Вместо импорта из index.js, передаем функцию handleImageClick как параметр
