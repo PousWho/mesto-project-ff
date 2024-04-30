@@ -44,7 +44,7 @@ export function editProfileForm(evt) {
   formElementProfile.addEventListener('submit', editProfileForm);
 
 const newCardForm = document.querySelector('.popup__form[name="new-place"]');
-newCardForm.addEventListener('submit', handleNewCardSubmit);
+
 
 const placeNameInput = document.querySelector('.popup__input[name="place-name"]');
 const linkInput = document.querySelector('.popup__input[name="link"]');
@@ -56,9 +56,11 @@ function handleNewCardSubmit(event) {
 
     addNewCard(placeName, link);
 
-    closePopup(newCardForm); // Закрытие попапа с помощью универсальной функции closePopup
+    closePopup(popupNewCard); // Закрытие попапа с помощью универсальной функции closePopup
     clearNewCardForm();
 }
+
+newCardForm.addEventListener('submit', handleNewCardSubmit);
 
 function addNewCard(name, link) {
     const newCard = createCard({ name: name, link: link }, deleteCard, likeCard, handleImageClick);
@@ -112,6 +114,7 @@ newCardPopupCloseButton.addEventListener('click', () => closePopup(popupNewCard)
 // Навешиваем обработчик на крестик закрытия попапа с изображением
 const imagePopupCloseButton = imagePopup.querySelector('.popup__close');
 imagePopupCloseButton.addEventListener('click', () => closePopup(imagePopup));
+
 
 
 
