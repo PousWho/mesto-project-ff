@@ -13,4 +13,23 @@
 @import url('../blocks/card/__like-button/_is-active/card__like-button_is-active.css');
 @import url('../blocks/popup/__content/_content/popup__content_content_image.css');
 @import url('../blocks/popup/__image/popup__image.css');
+.card__like-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .card__like-counter {
+    font-size: 13px;
+    line-height: 16px;
+    letter-spacing: 0em;
+    text-align: center;
+    max-width: 10px;
+    min-height: 13px;
+    align-self: center;
+  }
 
+.profile__image:hover {
+  cursor: pointer;  
+
+}

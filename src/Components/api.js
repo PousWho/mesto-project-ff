@@ -1,125 +1,50 @@
-const BASE_URL = "https://nomoreparties.co/v1/wff-cohort-9";
+// src/api.js
 
-const apiRoutes = {
-  user: "users/me",
-  cards: "cards",
-  likes: "likes",
-};
-
-
-const headers = {
-  Authorization: "d2e70dd3-0080-4863-b348-4caea4b1f52f",
-  "Content-Type": "application/json",
-};
-
-const checkData = (data) => {
-  if (data.ok) {
-    return data.json();
-  } else {
-    return Promise.reject(`Error: ${data.status}`);
+const config = {
+  baseUrl: 'https://nomoreparties.co/v1/wff-cohort-13',
+  headers: {
+    authorization: 'c7c0a1f1-8a9c-40f3-bc93-884b56d3d991',
+    'Content-Type': 'application/json'
   }
 };
 
-function request(endpoint, options) {
-  return fetch(`${BASE_URL}/${endpoint}`, options).then(checkData);
-}
-
-const getCards = () => {
-  return request(apiRoutes.cards, {
-    method: "GET",
-    headers,
-  });
+export const getUserData = () => {
+  return fetch(`${config.baseUrl}/users/me`, {
+    headers: config.headers
+  })
+  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`));
 };
 
-const postCard = (name, link) => {
-  return request(apiRoutes.cards, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      name,
-      link,
-    }),
-  });
+export const getInitialCards = () => {
+  return fetch(`${config.baseUrl}/cards`, {
+    headers: config.headers
+  })
+  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`));
 };
 
-
-const deleteCardApi = (id) => {
-  return request(`${apiRoutes.cards}/${id}`, {
-    method: "DELETE",
-    headers,
-  });
+export const updateUserProfile = (name, about) => {
+  return fetch(`${config.baseUrl}/users/me`, {
+    method: 'PATCH',
+    headers: config.headers,
+    body: JSON.stringify({ name, about })
+  })
+  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`));
 };
 
-const getUser = () => {
-  return request(apiRoutes.user, {
-    method: "GET",
-    headers,
-  });
+export const updateAvatar = (avatarUrl) => {
+  return fetch(`${config.baseUrl}/users/me/avatar`, {
+    method: 'PATCH',
+    headers: config.headers,
+    body: JSON.stringify({ avatar: avatarUrl })
+  })
+  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`));
 };
 
-const patchUser = (name, about) => {
-  return request(apiRoutes.user, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify({
-      name,
-      about,
-    }),
-  });
+export const addNewCard = (name, link) => {
+  return fetch(`${config.baseUrl}/cards`, {
+    method: 'POST',
+    headers: config.headers,
+    body: JSON.stringify({ name, link })
+  })
+  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`));
 };
-
-const addLikeCard = (id)  => {
-  return request(`${apiRoutes.cards}/${apiRoutes.likes}/${id}`, {
-    method: "PUT",
-    headers
-  });
-};
-
-const deleteLikeCard = (id) => {
-  return request(`${apiRoutes.cards}/${apiRoutes.likes}/${id}`, {
-    method: "DELETE",
-    headers,
-  });
-};
-
-const patchAvatar = (avatar) => {
-  return request(`${apiRoutes.user}/avatar`, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify({ avatar: avatar }),
-  });
-};
-// экспорт нужных функций
-export {
-  getCards,
-  postCard,
-  deleteCardApi,
-  getUser,
-  patchUser,
-  addLikeCard,
-  deleteLikeCard,
-  patchAvatar
-};
-
-export const editFormElement = document.forms["edit-profile"];
-export const newPlaceFormElement = document.forms["new-place"];
-export const avatarFormElement = document.forms["edit-avatar"];
-export const deleteCardForm = document.forms["delete-card"];
-export const buttonTypeCard = document.querySelector('.popup_type_image');
-export const profileEditButton = document.querySelector(".profile__edit-button");
-export const profileAddButton = document.querySelector(".profile__add-button");
-export const popupsArray = Array.from(document.querySelectorAll('.popup'));
-export const editForm = document.querySelector('.popup_type_edit');
-export const newCardForm = document.querySelector('.popup_type_new-card');
-export const avatarForm = document.querySelector(".popup_type_avatar");
-export const deletePopup = document.querySelector(".popup_type_delete-card");
-export const placesList = document.querySelector(".places__list");
-export const avatarImage = document.querySelector(".profile__image");
-export const nameInput = document.querySelector('.popup__input_type_name');
-export const jobInput = document.querySelector('.popup__input_type_description');
-export const userNameElement = document.querySelector('.profile__title');
-export const userJobElement = document.querySelector('.profile__description');
-export const newPlaceNameInput = newPlaceFormElement.elements["place-name"];
-export const newLinkInput = newPlaceFormElement.elements.link;
-export const popupImageCaption = document.querySelector(".popup__caption");
-export const popupImage = document.querySelector(".popup__image");

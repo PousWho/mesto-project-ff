@@ -3,7 +3,7 @@ import '../blocks/popup/popup.css'
 import { initialCards } from './cards.js';
 import './modal.js'
 import { closePopup, openPopup } from './modal.js';
-import { createCard, likeCard, deleteCard } from './card.js';
+import { createCard, likeCard, deleteCard, createCardElement, unlikeCard } from './card.js';
 
 const cardsContainer = document.querySelector('.places__list');
 
@@ -11,13 +11,64 @@ export const editPopup = document.querySelector('.popup');
 export const formElementProfile = editPopup.querySelector('form[name="edit-profile"]');
 export const profileEditButton = document.querySelector('.profile__edit-button');
 export const nameInputTitle = formElementProfile.querySelector('[name="name"]');
-const profileName = document.querySelector('.profile__title')
-const profileDescription = document.querySelector('.profile__description')
+const profileName = document.querySelector('.profile__title');
+const profileDescription = document.querySelector('.profile__description');
 export const descriptionInput = formElementProfile.querySelector('[name="description"]');
 export const closeButtons = document.querySelectorAll('.popup__close');
 export const confirmPopup = document.querySelector('.popup_type_confirm');
-const confirmDeleteForm = confirmPopup.querySelector('form[name="confirm-delete"]');
+export const confirmDeleteForm = confirmPopup.querySelector('form[name="confirm-delete"]');
+const avatar = document.querySelector('.profile__image');
 
+const popupEditAvatar = document.querySelector('.popup_type_edit-avatar');
+const formEditAvatar = popupEditAvatar.querySelector('form[name="edit-avatar"]');
+const avatarInput = formEditAvatar.querySelector('input[name="avatar"]');
+
+avatar.addEventListener('click', () => {
+  openPopup(popupEditAvatar);
+});
+
+// Функция для отправки PATCH-запроса
+function handleEditAvatarSubmit(event) {
+  event.preventDefault();
+  const submitButton = event.submitter;
+  const defaultText = submitButton.textContent;
+  setLoading(true, submitButton, defaultText);
+
+  const newAvatarUrl = avatarInput.value;
+
+  fetch(`https://nomoreparties.co/v1/${cohortId}/users/me/avatar`, {
+    method: 'PATCH',
+    headers: {
+      authorization: token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ avatar: newAvatarUrl })
+  })
+  .then(response => {
+    if (response.ok) return response.json();
+    throw new Error(`Ошибка: ${response.status}`);
+  })
+  .then(data => {
+    avatar.setAttribute(
+      "style",
+      `background-image: url('${data.avatar}')`
+    );
+    closePopup(popupEditAvatar);
+    formEditAvatar.reset();
+  })
+  .catch(error => console.error('Произошла ошибка при обновлении аватара:', error))
+  .finally(() => setLoading(false, submitButton, defaultText));
+}
+
+formEditAvatar.addEventListener('submit', handleEditAvatarSubmit);
+
+function setLoading(isLoading, button, defaultText) {
+  if (isLoading) {
+    button.textContent = 'Сохранение...';
+  } else {
+    button.textContent = defaultText;
+  }
+}
 
 const newCardForm = document.querySelector('.popup__form[name="new-place"]');
 const placeNameInput = document.querySelector('.popup__input[name="place"]');
@@ -29,7 +80,11 @@ function handleNewCardSubmit(event) {
     const link = linkInput.value;
     addNewCardServ(placeName, link);
     closePopup(popupNewCard); 
-    clearNewCardForm(); // Добавлено для сброса формы после закрытия
+    clearNewCardForm(); 
+
+    const submitButton = event.submitter;
+  const defaultText = submitButton.textContent;
+  setLoading(true, submitButton, defaultText);
 }
 
 newCardForm.addEventListener('submit', handleNewCardSubmit);
@@ -84,6 +139,12 @@ newCardPopupCloseButton.addEventListener('click', () => {
 
 const imagePopupCloseButton = imagePopup.querySelector('.popup__close');
 imagePopupCloseButton.addEventListener('click', () => closePopup(imagePopup));
+
+const editAvatarFormClose = popupEditAvatar.querySelector('.popup__close');
+editAvatarFormClose.addEventListener('click', () => closePopup(popupEditAvatar));
+
+const confirmClose = confirmPopup.querySelector('.popup__close');
+confirmClose.addEventListener('click', () => closePopup(confirmPopup));
 
 const showInputError = (formElement, inputElement, errorMessage, validationConfig) => {
     const errorElement = formElement.querySelector(`#${inputElement.name}-error`);
@@ -182,59 +243,77 @@ closeButtons.forEach((closeButton) => {
 enableValidation(validationConfigProfile);
 enableValidation(validationConfigNewPlace);
 
-const cohortId = 'wff-cohort-13';
-const token = 'c7c0a1f1-8a9c-40f3-bc93-884b56d3d991';
+export const cohortId = 'wff-cohort-13';
+export const token = 'c7c0a1f1-8a9c-40f3-bc93-884b56d3d991';
 
 export const currentUser = {
     _id: 'abfb6e60304d26790b5aa8d8',
 };
 
-function createCardElement(cardData) {
-    const cardTemplate = document.querySelector('#card-template');
-    const cardElement = cardTemplate.content.querySelector('.places__item').cloneNode(true);
-
-    cardElement.querySelector('.card__image').src = cardData.link;
-    cardElement.querySelector('.card__image').alt = cardData.name;
-    cardElement.querySelector('.card__title').textContent = cardData.name;
-
-    if (cardData.owner._id === currentUser._id) {
-        const deleteButton = cardElement.querySelector('.card__delete-button');
-        deleteButton.addEventListener('click', () => {
-            deleteCard(cardElement, cardData._id);
-        });
-    } else {
-        const deleteButton = cardElement.querySelector('.card__delete-button');
-        deleteButton.style.display = 'none';
-    }
-
-    return cardElement;
-}
-
 function renderCards(cardsData) {
     const cardsContainer = document.querySelector('.places__list');
     cardsData.forEach(cardData => cardsContainer.appendChild(createCardElement(cardData)));
+    console.log('Все карточки:', cardsData);
+
+    const likeButtons = document.querySelectorAll('.card__like-button');
+    likeButtons.forEach(likeButton => likeButton.addEventListener('click', handleLikeClick));
+}
+
+function handleLikeClick(event) {
+    const likeButton = event.target;
+    const cardElement = likeButton.closest('.places__item');
+    const cardId = cardElement.dataset.cardId;
+    likeButton.classList.toggle('card__like-button_is-active'); 
+    if (likeButton.classList.contains('card__like-button_active')) {
+        unlikeCard(cardId, cardElement);
+    } else {
+        likeCard(cardId, cardElement);
+    }
 }
 
 function addNewCardServ(name, link) {
-    fetch(`https://nomoreparties.co/v1/${cohortId}/cards`, {
-        method: 'POST',
-        headers: {
-            authorization: token,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, link })
-    })
-    .then(response => {
-        if (response.ok) return response.json();
-        throw new Error(`Ошибка: ${response.status}`);
-    })
-    .then(data => {
-        console.log('Новая карточка добавлена:', data);
-        const newCard = createCardElement(data);
-        cardsContainer.prepend(newCard);
-    })
-    .catch(error => console.error('Произошла ошибка при добавлении новой карточки:', error));
+  return fetch(`https://nomoreparties.co/v1/${cohortId}/cards`, {
+    method: 'POST',
+    headers: {
+      authorization: token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name, link })
+  })
+  .then(response => {
+    if (response.ok) return response.json();
+    throw new Error(`Ошибка: ${response.status}`);
+  })
+  .then(data => {
+    console.log('Новая карточка добавлена:', data);
+    const newCard = createCardElement(data);
+    cardsContainer.prepend(newCard);
+  })
+  .catch(error => console.error('Произошла ошибка при добавлении новой карточки:', error));
 }
+
+// Функция для получения данных о пользователе с сервера и обновления DOM
+function getUserDataAndRender() {
+  fetch(`https://nomoreparties.co/v1/${cohortId}/users/me`, {
+    headers: {
+      authorization: token
+    }
+  })
+  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`))
+  .then(userData => {
+    updateUserDataInDOM(userData);
+    avatar.setAttribute("style", `background-image: url('${userData.avatar}')`);
+  })
+  .catch(error => console.error('Произошла ошибка при получении данных о пользователе:', error));
+}
+
+function updateUserDataInDOM(userData) {
+  profileName.textContent = userData.name;
+  profileDescription.textContent = userData.about;
+}
+
+// Получаем данные о пользователе и обновляем DOM при загрузке страницы
+getUserDataAndRender();
 
 Promise.all([
     fetch(`https://mesto.nomoreparties.co/v1/${cohortId}/users/me`, {
@@ -251,16 +330,13 @@ Promise.all([
     currentUser._id = userData._id; // Обновляем currentUser с данными от сервера
     renderCards(cardsData);
     const cardImages = document.querySelectorAll('.card__image');
-  cardImages.forEach(image => image.addEventListener('click', handleImageClick)); 
-  //const likeButton = document.querySelector('.card__like-button');
-  //likeButton.forEach(likeButton => likeButton.addEventListener('click', likeCard));
+    cardImages.forEach(image => image.addEventListener('click', handleImageClick)); 
 })
 
 .catch(error => console.error('Произошла ошибка при загрузке данных:', error));
 
-
 function updateUserProfile(name, about) {
-  fetch(`https://nomoreparties.co/v1/${cohortId}/users/me`, {
+  return fetch(`https://nomoreparties.co/v1/${cohortId}/users/me`, {
     method: 'PATCH',
     headers: {
       authorization: token,
@@ -279,7 +355,6 @@ function updateUserProfile(name, about) {
   })
   .then(data => {
     console.log('Данные пользователя обновлены:', data);
-    // Обновляем данные в DOM
     profileName.textContent = data.name;
     profileDescription.textContent = data.about;
     return data;
@@ -289,45 +364,6 @@ function updateUserProfile(name, about) {
   });
 }
 
-// Функция для получения данных о пользователе с сервера
-function getUserData() {
-  return fetch(`https://nomoreparties.co/v1/${cohortId}/users/me`, {
-    headers: {
-      authorization: token
-    }
-  })
-  .then(response => {
-    if (response.ok) {
-      return response.json();
-    }
-    throw new Error(`Ошибка: ${response.status}`);
-  });
-}
-
-// Функция для обновления данных о пользователе в DOM
-function updateUserDataInDOM(userData) {
-  profileName.textContent = userData.name;
-  profileDescription.textContent = userData.about;
-}
-
-// Получаем данные о пользователе и обновляем DOM
-getUserData()
-  .then(userData => {
-    updateUserDataInDOM(userData);
-  })
-  .catch(error => {
-    console.error('Произошла ошибка при получении данных о пользователе:', error);
-  });
-
-function fillProfileForm(userData) {
-  nameInputTitle.value = userData.name;
-  descriptionInput.value = userData.about;  
-}
-
-fetch(`https://nomoreparties.co/v1/${cohortId}/users/me`, { headers: { authorization: token } })
-.then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`))
-.then(userData => fillProfileForm(userData))
-.catch(error => console.error('Произошла ошибка при получении данных о пользователе:', error));
 
 formElementProfile.addEventListener('submit', function(event) {
   event.preventDefault();
@@ -335,7 +371,17 @@ formElementProfile.addEventListener('submit', function(event) {
   const newDescriptionFe = descriptionInput.value;
   updateUserProfile(newNameFe, newDescriptionFe);
   closePopup(editPopup);
+
+  const submitButton = event.submitter;
+  const defaultText = submitButton.textContent;
+  setLoading(true, submitButton, defaultText);
+
+  updateUserProfile(newNameFe, newDescriptionFe)
+    .then(() => closePopup(editPopup))
+    .finally(() => setLoading(false, submitButton, defaultText));
+
 });
+
 
 
 

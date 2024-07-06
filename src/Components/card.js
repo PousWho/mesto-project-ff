@@ -1,25 +1,42 @@
 import { openImagePopup, handleImageClick } from './index.js';
-import { currentUser } from './index.js'; // Импортируем currentUser
+import { currentUser, cohortId, token, confirmPopup, confirmDeleteForm } from './index.js'; // Импортируем currentUser
+import { openPopup, closePopup } from './modal.js';
 
-export function createCard(cardData) {
+function showDeleteConfirmationPopup(cardElement, cardId) {
+    openPopup(confirmPopup);
+
+    // Обработчик для подтверждения удаления
+    const handleConfirmDelete = (event) => {
+        event.preventDefault();
+        deleteCard(cardElement, cardId);
+        closePopup(confirmPopup);
+        confirmPopup.classList.remove('popup_opened');
+        confirmDeleteForm.removeEventListener('submit', handleConfirmDelete);
+    };
+
+    // Добавляем обработчик на форму подтверждения удаления
+    confirmDeleteForm.addEventListener('submit', handleConfirmDelete);
+}
+
+export function createCardElement(cardData) {
     const cardTemplate = document.querySelector('#card-template');
     const cardElement = cardTemplate.content.querySelector('.places__item').cloneNode(true);
 
     cardElement.querySelector('.card__image').src = cardData.link;
     cardElement.querySelector('.card__image').alt = cardData.name;
     cardElement.querySelector('.card__title').textContent = cardData.name;
+    cardElement.querySelector('.card__like-counter').textContent = cardData.likes.length;
+    cardElement.dataset.cardId = cardData._id; // Добавляем ID карточки в dataset
 
-    const likeButton = cardElement.querySelector('.card__like-button');
-    likeButton.addEventListener('click', () => {
-        likeCard(cardData._id, likeButton);
-    });
-
-    cardElement.querySelector('.card__image').addEventListener('click', handleImageClick);
+    if (cardData.likes.some(user => user._id === currentUser._id)) {
+        cardElement.querySelector('.card__like-button').classList.add('card__like-button_active');
+    }
 
     if (cardData.owner._id === currentUser._id) {
         const deleteButton = cardElement.querySelector('.card__delete-button');
+
         deleteButton.addEventListener('click', () => {
-            deleteCard(cardElement, cardData._id);
+            showDeleteConfirmationPopup(cardElement, cardData._id);
         });
     } else {
         const deleteButton = cardElement.querySelector('.card__delete-button');
@@ -29,27 +46,65 @@ export function createCard(cardData) {
     return cardElement;
 }
 
-export function likeCard(cardId, likeButton) {
-    // Логика для лайка карточки
-    fetch(`https://mesto.nomoreparties.co/v1/cohortId/cards/likes/${cardId}`, {
+
+
+
+export function likeCard(cardId, cardElement) {
+    fetch(`https://nomoreparties.co/v1/${cohortId}/cards/likes/${cardId}`, {
         method: 'PUT',
         headers: {
-            authorization: 'c7c0a1f1-8a9c-40f3-bc93-884b56d3d991'
+            authorization: token,
+            'Content-Type': 'application/json'
         }
     })
-    .then(res => res.json())
-    .then((data) => {
-        likeButton.classList.toggle('card__like-button_active');
+    .then(response => {
+        if (response.ok) return response.json();
+        throw new Error(`Ошибка: ${response.status}`);
     })
-    .catch((err) => console.error(`Ошибка: ${err}`));
+    .then(data => {
+        updateCardLikes(cardElement, data);
+    })
+    .catch(error => console.error('Произошла ошибка при постановке лайка:', error));
 }
 
-export function deleteCard(cardElement, cardId) {
-    // Логика для удаления карточки
-    fetch(`https://mesto.nomoreparties.co/v1/cohortId/cards/${cardId}`, {
+export function unlikeCard(cardId, cardElement) {
+    fetch(`https://nomoreparties.co/v1/${cohortId}/cards/likes/${cardId}`, {
         method: 'DELETE',
         headers: {
-            authorization: 'c7c0a1f1-8a9c-40f3-bc93-884b56d3d991'
+            authorization: token,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) return response.json();
+        throw new Error(`Ошибка: ${response.status}`);
+    })
+    .then(data => {
+        updateCardLikes(cardElement, data);
+    })
+    .catch(error => console.error('Произошла ошибка при снятии лайка:', error));
+}
+
+function updateCardLikes(cardElement, cardData) {
+    const likeCounter = cardElement.querySelector('.card__like-counter');
+    const likeButton = cardElement.querySelector('.card__like-button');
+
+    likeCounter.textContent = cardData.likes.length;
+
+    if (cardData.likes.some(user => user._id === currentUser._id)) {
+        likeButton.classList.add('card__like-button_active');
+    } else {
+        likeButton.classList.remove('card__like-button_active');
+    }
+}
+
+
+
+export function deleteCard(cardElement, cardId) {
+    fetch(`https://mesto.nomoreparties.co/v1/${cohortId}/cards/${cardId}`, {
+        method: 'DELETE',
+        headers: {
+            authorization: token
         }
     })
     .then(res => res.json())
@@ -58,3 +113,4 @@ export function deleteCard(cardElement, cardId) {
     })
     .catch((err) => console.error(`Ошибка: ${err}`));
 }
+
