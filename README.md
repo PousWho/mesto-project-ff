@@ -1,2 +1,2 @@
 # Проектная работа Mesto
-[text](https://pouswho.github.io/mesto-project-ff/)
+[Link to this website](https://pouswho.github.io/mesto-project-ff/)
