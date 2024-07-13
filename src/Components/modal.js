@@ -15,7 +15,7 @@ export function closePopup(popup) {
 
 // Обработчики закрытия попапа по нажатию на Esc и клику вне области попапа
 function closePopupOnEsc(event) {
-  if (event.keyCode === 27) {
+  if (event.key === "Escape") {
     const openPopup = document.querySelector('.popup_is-opened');
     if (openPopup) {
       closePopup(openPopup);
