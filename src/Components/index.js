@@ -25,8 +25,6 @@ export const nameInputTitle = formElementProfile.querySelector('[name="name"]');
 const profileName = document.querySelector('.profile__title');
 const profileDescription = document.querySelector('.profile__description');
 export const descriptionInput = formElementProfile.querySelector('[name="description"]');
-export const confirmPopup = document.querySelector('.popup_type_confirm');
-export const confirmDeleteForm = confirmPopup.querySelector('form[name="confirm-delete"]');
 const avatar = document.querySelector('.profile__image');
 
 const popupEditAvatar = document.querySelector('.popup_type_edit-avatar');
@@ -83,7 +81,7 @@ function handleNewCardSubmit(event) {
   addNewCard(placeName, link)
     .then(data => {
       console.log('Новая карточка добавлена:', data);
-      const newCard = createCardElement(data);
+      const newCard = createCardElement(data, handleImageClick, handleLikeClick);
       cardsContainer.prepend(newCard);
       closePopup(popupNewCard);
       clearNewCardForm();
@@ -145,11 +143,11 @@ imagePopupCloseButton.addEventListener('click', () => closePopup(imagePopup));
 const editAvatarFormClose = popupEditAvatar.querySelector('.popup__close');
 editAvatarFormClose.addEventListener('click', () => closePopup(popupEditAvatar));
 
-const confirmClose = confirmPopup.querySelector('.popup__close');
-confirmClose.addEventListener('click', () => closePopup(confirmPopup));
-
 function renderCards(cardsData) {
-  cardsData.forEach(cardData => cardsContainer.appendChild(createCardElement(cardData)));
+  cardsData.forEach(cardData => {
+    const cardElement = createCardElement(cardData, handleImageClick, handleLikeClick);
+    cardsContainer.appendChild(cardElement);
+  });
   console.log('Все карточки:', cardsData);
 }
 

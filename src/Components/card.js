@@ -1,54 +1,29 @@
-import { openImagePopup, handleImageClick } from './index.js';
-import { confirmPopup, confirmDeleteForm, handleLikeClick, userId } from './index.js'; // Убираем импорт currentUser
-import { openPopup, closePopup } from './modal.js';
-import { cohortId, token, likeCard as apiLikeCard, unlikeCard as apiUnlikeCard, deleteCard as apiDeleteCard } from './api.js';
+import { userId } from './index.js';
+import { likeCard as apiLikeCard, unlikeCard as apiUnlikeCard, deleteCard as apiDeleteCard } from './api.js';
 
-let cardElementToDelete = null;
-let cardIdToDelete = null;
-
-function showDeleteConfirmationPopup(cardElement, cardId) {
-  cardElementToDelete = cardElement;
-  cardIdToDelete = cardId;
-  openPopup(confirmPopup);
-}
-
-function handleConfirmDelete(event) {
-  event.preventDefault();
-  apiDeleteCard(cardElementToDelete, cardIdToDelete);
-  closePopup(confirmPopup);
-}
-
-function setupDeleteConfirmationListener() {
-  confirmDeleteForm.addEventListener('submit', handleConfirmDelete);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  setupDeleteConfirmationListener();
-});
-
-export function createCardElement(cardData) {
+export function createCardElement(cardData, handleImageClick, handleLikeClick) {
   const cardTemplate = document.querySelector('#card-template');
   const cardElement = cardTemplate.content.querySelector('.places__item').cloneNode(true);
 
-  const cardImages = document.querySelectorAll('.card__image');
-  cardImages.forEach(image => image.addEventListener('click', handleImageClick));
+  const cardImage = cardElement.querySelector('.card__image');
+  cardImage.src = cardData.link;
+  cardImage.alt = cardData.name;
+  cardImage.addEventListener('click', handleImageClick);
 
-  const likeButtons = document.querySelectorAll('.card__like-button');
-  likeButtons.forEach(likeButton => likeButton.addEventListener('click', handleLikeClick));
-  cardElement.querySelector('.card__image').src = cardData.link;
-  cardElement.querySelector('.card__image').alt = cardData.name;
   cardElement.querySelector('.card__title').textContent = cardData.name;
   cardElement.querySelector('.card__like-counter').textContent = cardData.likes.length;
   cardElement.dataset.cardId = cardData._id;
 
-  if (cardData.likes.some(user => user._id === userId)) { // Используем userId вместо currentUser._id
-    cardElement.querySelector('.card__like-button').classList.add('card__like-button_active');
+  const likeButton = cardElement.querySelector('.card__like-button');
+  likeButton.addEventListener('click', handleLikeClick);
+  if (cardData.likes.some(user => user._id === userId)) {
+    likeButton.classList.add('card__like-button_active');
   }
 
-  if (cardData.owner._id === userId) { // Используем userId вместо currentUser._id
+  if (cardData.owner._id === userId) {
     const deleteButton = cardElement.querySelector('.card__delete-button');
     deleteButton.addEventListener('click', () => {
-      showDeleteConfirmationPopup(cardElement, cardData._id);
+      deleteCard(cardElement, cardData._id);
     });
   } else {
     const deleteButton = cardElement.querySelector('.card__delete-button');
@@ -64,7 +39,7 @@ function updateCardLikes(cardElement, cardData) {
 
   likeCounter.textContent = cardData.likes.length;
 
-  if (cardData.likes.some(user => user._id === userId)) { // Используем userId вместо currentUser._id
+  if (cardData.likes.some(user => user._id === userId)) {
     likeButton.classList.add('card__like-button_active');
   } else {
     likeButton.classList.remove('card__like-button_active');
