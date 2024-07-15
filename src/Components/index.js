@@ -1,20 +1,23 @@
 import '../pages/index.css';
 import '../blocks/popup/popup.css';
-import { initialCards } from './cards.js';
 import './modal.js';
 import { closePopup, openPopup } from './modal.js';
-import { createCard, likeCard, deleteCard, createCardElement, unlikeCard } from './card.js';
+import { likeCard, deleteCard, createCardElement, unlikeCard } from './card.js';
 import { updateUserProfile, getUserData, getCards, updateAvatar, addNewCard } from './api.js';
 import {
   enableValidation,
-  validationConfig,
-  showInputError,
-  hideInputError,
-  checkInputValidity,
-  hasInvalidInput,
-  toggleButtonState,
   clearValidation
 } from './validation.js';
+
+export const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'button-disabled',
+  activeButtonClass: 'popup__button',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+};
 
 const cardsContainer = document.querySelector('.places__list');
 
@@ -81,7 +84,7 @@ function handleNewCardSubmit(event) {
   addNewCard(placeName, link)
     .then(data => {
       console.log('Новая карточка добавлена:', data);
-      const newCard = createCardElement(data, handleImageClick, handleLikeClick);
+      const newCard = createCardElement(data, handleImageClick, handleLikeClick, handleDeleteClick);
       cardsContainer.prepend(newCard);
       closePopup(popupNewCard);
       clearNewCardForm();
@@ -145,7 +148,7 @@ editAvatarFormClose.addEventListener('click', () => closePopup(popupEditAvatar))
 
 function renderCards(cardsData) {
   cardsData.forEach(cardData => {
-    const cardElement = createCardElement(cardData, handleImageClick, handleLikeClick);
+    const cardElement = createCardElement(cardData, handleImageClick, handleLikeClick, handleDeleteClick);
     cardsContainer.appendChild(cardElement);
   });
   console.log('Все карточки:', cardsData);
@@ -155,12 +158,16 @@ export function handleLikeClick(event) {
   const likeButton = event.target;
   const cardElement = likeButton.closest('.places__item');
   const cardId = cardElement.dataset.cardId;
-  likeButton.classList.toggle('card__like-button_is-active'); // Поменяем состояние лайка
+
   if (likeButton.classList.contains('card__like-button_is-active')) {
-    likeCard(cardId, cardElement);
-  } else {
     unlikeCard(cardId, cardElement);
+  } else {
+    likeCard(cardId, cardElement);
   }
+}
+
+export function handleDeleteClick(cardElement, cardId) {
+  deleteCard(cardElement, cardId);
 }
 
 function handleProfileFormSubmit(event) {
@@ -186,13 +193,15 @@ formElementProfile.addEventListener('submit', handleProfileFormSubmit);
 enableValidation(validationConfig);
 
 Promise.all([getUserData(), getCards()])
-  .then(([userData, cards]) => {
-    userId = userData._id;
+  .then(([userData, cardsData]) => {
+    console.log('User Data:', userData);
+    console.log('Cards Data:', cardsData);
+
     profileName.textContent = userData.name;
     profileDescription.textContent = userData.about;
     avatar.setAttribute("style", `background-image: url('${userData.avatar}')`);
-    renderCards(cards);
+    userId = userData._id;
+
+    renderCards(cardsData);
   })
-  .catch((err) => {
-    console.log(err);
-  });
+  .catch(err => console.error(`Ошибка при загрузке данных: ${err}`));

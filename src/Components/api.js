@@ -1,126 +1,71 @@
-export const cohortId = 'wff-cohort-13';
-export const token = 'c7c0a1f1-8a9c-40f3-bc93-884b56d3d991';
+const config = {
+  baseUrl: 'https://mesto.nomoreparties.co/v1/wff-cohort-13',
+  headers: {
+    authorization: 'c7c0a1f1-8a9c-40f3-bc93-884b56d3d991',
+    'Content-Type': 'application/json'
+  }
+};
 
-export function updateUserProfile(name, about) {
-  return fetch(`https://nomoreparties.co/v1/${cohortId}/users/me`, {
+function checkResponse(res) {
+  if (res.ok) {
+    return res.json();
+  }
+  return res.json().then(err => Promise.reject(`Ошибка: ${res.status} - ${err.message}`));
+}
+
+export const getUserData = () => {
+  return fetch(`${config.baseUrl}/users/me`, {
+    headers: config.headers
+  }).then(checkResponse);
+};
+
+export const getCards = () => {
+  return fetch(`${config.baseUrl}/cards`, {
+    headers: config.headers
+  }).then(checkResponse);
+};
+
+export const updateUserProfile = (name, about) => {
+  return fetch(`${config.baseUrl}/users/me`, {
     method: 'PATCH',
-    headers: {
-      authorization: token,
-      'Content-Type': 'application/json'
-    },
+    headers: config.headers,
     body: JSON.stringify({ name, about })
-  })
-  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`))
-  .catch(error => {
-    console.error('Произошла ошибка при обновлении данных пользователя:', error);
-    throw error;
-  });
-}
+  }).then(checkResponse);
+};
 
-export function getUserData() {
-  return fetch(`https://nomoreparties.co/v1/${cohortId}/users/me`, {
-    headers: { authorization: token }
-  })
-  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`))
-  .catch(error => {
-    console.error('Произошла ошибка при получении данных о пользователе:', error);
-    throw error;
-  });
-}
-
-export function getCards() {
-  return fetch(`https://nomoreparties.co/v1/${cohortId}/cards`, {
-    headers: { authorization: token }
-  })
-  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`))
-  .catch(error => {
-    console.error('Произошла ошибка при получении карточек:', error);
-    throw error;
-  });
-}
-
-
-
-export function updateAvatar(newAvatarUrl) {
-  return fetch(`https://nomoreparties.co/v1/${cohortId}/users/me/avatar`, {
+export const updateAvatar = (avatar) => {
+  return fetch(`${config.baseUrl}/users/me/avatar`, {
     method: 'PATCH',
-    headers: {
-      authorization: token,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ avatar: newAvatarUrl })
-  })
-  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`))
-  .catch(error => {
-    console.error('Произошла ошибка при обновлении аватара:', error);
-    throw error;
-  });
-}
+    headers: config.headers,
+    body: JSON.stringify({ avatar })
+  }).then(checkResponse);
+};
 
-export function addNewCard(name, link) {
-  return fetch(`https://nomoreparties.co/v1/${cohortId}/cards`, {
+export const addNewCard = (name, link) => {
+  return fetch(`${config.baseUrl}/cards`, {
     method: 'POST',
-    headers: {
-      authorization: token,
-      'Content-Type': 'application/json'
-    },
+    headers: config.headers,
     body: JSON.stringify({ name, link })
-  })
-  .then(response => response.ok ? response.json() : Promise.reject(`Ошибка: ${response.status}`))
-  .catch(error => {
-    console.error('Произошла ошибка при добавлении новой карточки:', error);
-    throw error;
-  });
-}
-// Функция для постановки лайка
-export function likeCard(cardId, cardElement, updateCardLikes) {
-    fetch(`https://nomoreparties.co/v1/${cohortId}/cards/likes/${cardId}`, {
-        method: 'PUT',
-        headers: {
-            authorization: token,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (response.ok) return response.json();
-        throw new Error(`Ошибка: ${response.status}`);
-    })
-    .then(data => {
-        updateCardLikes(cardElement, data);
-    })
-    .catch(error => console.error('Произошла ошибка при постановке лайка:', error));
-}
+  }).then(checkResponse);
+};
 
-// Функция для снятия лайка
-export function unlikeCard(cardId, cardElement, updateCardLikes) {
-    fetch(`https://nomoreparties.co/v1/${cohortId}/cards/likes/${cardId}`, {
-        method: 'DELETE',
-        headers: {
-            authorization: token,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (response.ok) return response.json();
-        throw new Error(`Ошибка: ${response.status}`);
-    })
-    .then(data => {
-        updateCardLikes(cardElement, data);
-    })
-    .catch(error => console.error('Произошла ошибка при снятии лайка:', error));
-}
+export const likeCard = (cardId) => {
+  return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+    method: 'PUT',
+    headers: config.headers
+  }).then(checkResponse);
+};
 
-// Функция для удаления карточки
-export function deleteCard(cardElement, cardId) {
-    fetch(`https://mesto.nomoreparties.co/v1/${cohortId}/cards/${cardId}`, {
-        method: 'DELETE',
-        headers: {
-            authorization: token
-        }
-    })
-    .then(res => res.json())
-    .then(() => {
-        cardElement.remove();
-    })
-    .catch((err) => console.error(`Ошибка: ${err}`));
-}
+export const unlikeCard = (cardId) => {
+  return fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+    method: 'DELETE',
+    headers: config.headers
+  }).then(checkResponse);
+};
+
+export const deleteCard = (cardId) => {
+  return fetch(`${config.baseUrl}/cards/${cardId}`, {
+    method: 'DELETE',
+    headers: config.headers
+  }).then(checkResponse);
+};

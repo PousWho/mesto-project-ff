@@ -1,3 +1,5 @@
+import { validationConfig } from './index'
+
 const showInputError = (formElement, inputElement, errorMessage, validationConfig) => {
   const errorElement = formElement.querySelector(`#${inputElement.name}-error`);
   if (errorElement) {
@@ -77,15 +79,7 @@ function clearValidation(formElement, validationConfig) {
   }
 }
 
-const validationConfig = {
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: 'button-disabled',
-  activeButtonClass: 'popup__button',
-  inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible'
-};
+
 
 export {
   enableValidation,
